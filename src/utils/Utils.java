@@ -1,6 +1,9 @@
 package utils;
 
 import java.awt.Component;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -36,4 +39,27 @@ public class Utils {
             column.setPreferredWidth(maxwidth);
         } // for col
     }
+
+    public static boolean isFechaInicioMayor(
+            final String inicio, final String fin) {
+        boolean fechaInicioMayor = false;
+        try {
+            SimpleDateFormat formateador = new SimpleDateFormat("dd/MM/yyyy");
+            Date fechaDate1 = formateador.parse(inicio);
+            Date fechaDate2 = formateador.parse(fin);
+
+            System.out.println("inicio " + fechaDate1);
+            System.out.println("fin " + fechaDate2);
+
+            if (fechaDate1.before(fechaDate2)) {
+                fechaInicioMayor = false;
+            } else {
+                fechaInicioMayor = true;
+            }
+        } catch (ParseException e) {
+            System.out.println("Se Produjo un Error!!!  " + e.getMessage());
+        }
+        return fechaInicioMayor;
+    }
 }
+

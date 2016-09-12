@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import javax.swing.JTable;
 import utils.Utils;
 
@@ -152,5 +153,60 @@ public class DAO {
 
         new Conexion().CargarDatosEnTabla(sql, Titulos, tblEmpleados);
         new Utils().adjustColumnPreferredWidths(tblEmpleados);
+    }
+    
+
+    /**
+     * Carga tabla con datos de empleados.
+     * @param tblDetalle  tabla a Cargar.
+     */
+    final public void cargaDetallesSalaio(JTable tblDetalle) {
+        String[] Titulos = {"N° Empleado", "Nombre", "Dirección",
+            "Ciudad", "Telefono"};
+        String sql = "Select idEmpleado, concat_ws(' ', nombre, apellidos),"
+                + " direccion, ciudad, telefono from empleados";
+
+        new Conexion().CargarDatosEnTabla(sql, Titulos, tblDetalle);
+        new Utils().adjustColumnPreferredWidths(tblDetalle);
+    }
+
+    public HashMap<String, String> calculaHorasTrabajadas(final String fechaIni, final String
+            fechaFin, final String numEmpleado) throws SQLException {
+
+        Conexion db = new Conexion().conectar();
+
+        String horas = "";
+        String dias = "";
+        HashMap<String, String> datos = new HashMap<String, String>();
+
+        String queryHoras = String.format(""
+                + " SELECT concat( SEC_TO_TIME(SUM(TIME_TO_SEC(horas))), '')"
+                + " AS totalHours"
+                + " from registroes where idEmpleado = '%s'"
+                + " and fecha >= '%s' and fecha <= '%s' ",
+                numEmpleado, fechaIni, fechaFin);
+
+        String queryDias = String.format(
+                "SELECT DATEDIFF('%s','%s') + 1 as dias", fechaFin, fechaIni);
+
+        String querySalario = String.format("select salarioHora, salarioDia"
+                + " from puestos, empleados where idPuesto = puesto"
+                + " and idEmpleado ='%s'", numEmpleado);
+        try {
+
+            horas = db.queryForString(queryHoras);
+            dias = db.queryForString(queryDias);
+            datos = db.queryForMap(querySalario);
+            datos.put("Horas", horas);
+            datos.put("Dias", dias);
+        } finally {
+            db.getConexion().close();
+        }
+
+        return datos;
+    }
+
+    private void executeQuery() {
+        
     }
 }

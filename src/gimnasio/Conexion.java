@@ -10,6 +10,8 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
@@ -96,23 +98,15 @@ public class Conexion {
     //Metodo que regresa un dato consultado
     public String queryForString(String query) throws SQLException {
         String Dato = "";
-        Conexion baseDatos = new Conexion().conectar();
 
         System.out.println("Ejecutando Query " + query);
 
         ResultSet resultado = null;
-        resultado = baseDatos.consultar(query);
+        resultado = consultar(query);
         while (resultado.next()) {
             String tmpStrObtenido = resultado.getString(1);
             Dato = tmpStrObtenido.toUpperCase();
         }
-        if (resultado != null) {
-            resultado.close();
-        }
-        if (getConexion() != null) {
-            getConexion().close();
-        }
-
         return Dato;
     }
 
@@ -145,5 +139,39 @@ public class Conexion {
                 JOptionPane.showMessageDialog(null, e);
             }
         }
+    }
+
+    public ArrayList<String> queryForList(final String sql)
+            throws SQLException {
+
+        ArrayList<String> list = null;
+        Conexion baseDatos = new Conexion().conectar();
+
+        ResultSet rs = baseDatos.consultar(sql);
+        if (rs != null && rs.next()) {
+            list = new ArrayList<String>();
+            while (rs.next()) {
+                for (int i = 1; i <= rs.getMetaData().getColumnCount(); i++) {
+                    list.add(rs.getString(i));
+                }
+            }
+        }
+        return list;
+    }
+
+    public HashMap<String, String> queryForMap(final String sql)
+            throws SQLException {
+        new Conexion().conectar();
+        HashMap<String, String> map = null;
+
+        ResultSet rs = consultar(sql);
+
+        if (rs != null && rs.next()) {
+            map = new HashMap<String, String>();
+            for (int i = 1; i < rs.getMetaData().getColumnCount() + 1; i++) {
+                map.put(rs.getMetaData().getColumnName(i), rs.getString(i));
+            }
+        }
+        return map;
     }
 }
